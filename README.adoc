@@ -1,0 +1,10 @@
+= Framebuffer copying & conversion utilities
+
+This library contains a wrapper around a Framebuffer as well as various functions to efficiently
+copy & convert pixel data from one format to another
+
+== Features
+
+* Blitting arbitrary areas with custom stride.
+* RGB888 to RGBX8888 conversion.
+* RGB888 to BGRX8888 conversion.
