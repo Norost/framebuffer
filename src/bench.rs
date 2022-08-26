@@ -21,8 +21,8 @@ where
 #[bench]
 fn copy_untrusted_rgb24_to_bgrx32(b: &mut Bencher) {
 	static SRC: [[u8; 3]; 640 * 480] = [[0; 3]; 640 * 480];
-	with_fb(1024, 640, 480, |fb| {
-		let (src, stride, x, y, w, h) = black_box((&SRC[..], 640, 0, 0, 640, 480));
+	with_fb(1023, 639, 479, |fb| {
+		let (src, stride, x, y, w, h) = black_box((&SRC[..], 639, 0, 0, 639, 479));
 		b.bytes = u64::from(w) * u64::from(h) * 3;
 		b.iter(|| unsafe {
 			fb.copy_from_raw_untrusted_rgb24_to_bgrx32(src.as_ptr(), stride, x, y, w, h)
@@ -33,8 +33,8 @@ fn copy_untrusted_rgb24_to_bgrx32(b: &mut Bencher) {
 #[bench]
 fn copy_untrusted_rgb24_to_bgrx32_margin(b: &mut Bencher) {
 	static SRC: [[u8; 3]; 640 * 480] = [[0; 3]; 640 * 480];
-	with_fb(1024, 640, 480, |fb| {
-		let (src, stride, x, y, w, h) = black_box((&SRC[..], 640, 2, 2, 636, 476));
+	with_fb(1023, 639, 479, |fb| {
+		let (src, stride, x, y, w, h) = black_box((&SRC[..], 639, 2, 2, 635, 475));
 		b.bytes = u64::from(w) * u64::from(h) * 3;
 		b.iter(|| unsafe {
 			fb.copy_from_raw_untrusted_rgb24_to_bgrx32(src.as_ptr(), stride, x, y, w, h)
@@ -45,8 +45,8 @@ fn copy_untrusted_rgb24_to_bgrx32_margin(b: &mut Bencher) {
 #[bench]
 fn copy_untrusted_rgb24_to_bgrx32_large(b: &mut Bencher) {
 	static SRC: [[u8; 3]; 1920 * 1080] = [[0; 3]; 1920 * 1080];
-	with_fb(2048, 1920, 1080, |fb| {
-		let (src, stride, x, y, w, h) = black_box((&SRC[..], 1920, 0, 0, 1920, 1080));
+	with_fb(2047, 1919, 1079, |fb| {
+		let (src, stride, x, y, w, h) = black_box((&SRC[..], 1919, 0, 0, 1919, 1079));
 		b.bytes = u64::from(w) * u64::from(h) * 3;
 		b.iter(|| unsafe {
 			fb.copy_from_raw_untrusted_rgb24_to_bgrx32(src.as_ptr(), stride, x, y, w, h)
@@ -57,8 +57,8 @@ fn copy_untrusted_rgb24_to_bgrx32_large(b: &mut Bencher) {
 #[bench]
 fn copy_untrusted_rgb24_to_bgrx32_blit_small(b: &mut Bencher) {
 	static SRC: [[u8; 3]; 1920 * 1080] = [[0; 3]; 1920 * 1080];
-	with_fb(2048, 1920, 1080, |fb| {
-		let (src, stride, x, y, w, h) = black_box((&SRC[..], 1920, 60, 79, 33, 35));
+	with_fb(2047, 1919, 1079, |fb| {
+		let (src, stride, x, y, w, h) = black_box((&SRC[..], 1919, 60, 79, 32, 34));
 		b.bytes = u64::from(w) * u64::from(h) * 3;
 		b.iter(|| unsafe {
 			fb.copy_from_raw_untrusted_rgb24_to_bgrx32(src.as_ptr(), stride, x, y, w, h)

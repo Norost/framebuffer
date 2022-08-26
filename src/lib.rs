@@ -39,6 +39,9 @@ pub struct FrameBuffer<T: PixelFormat> {
 }
 
 impl<T: PixelFormat> FrameBuffer<T> {
+	/// # Note
+	///
+	/// width, height and stride are encoded as the real value **minus** one.
 	pub unsafe fn new(base: NonNull<T::E>, width: u16, height: u16, stride: u16) -> Self {
 		Self {
 			base,

@@ -2,6 +2,9 @@ use super::*;
 use core::arch::x86_64;
 
 impl FrameBuffer<Rgbx8888> {
+	/// # Note
+	///
+	/// width, height and stride are encoded as the real value **minus** one.
 	#[target_feature(enable = "ssse3")]
 	pub unsafe fn copy_from_raw_untrusted_rgb24_to_rgbx32(
 		&mut self,
@@ -20,6 +23,9 @@ impl FrameBuffer<Rgbx8888> {
 }
 
 impl FrameBuffer<Bgrx8888> {
+	/// # Note
+	///
+	/// width, height and stride are encoded as the real value **minus** one.
 	#[target_feature(enable = "ssse3")]
 	pub unsafe fn copy_from_raw_untrusted_rgb24_to_bgrx32(
 		&mut self,
@@ -37,10 +43,13 @@ impl FrameBuffer<Bgrx8888> {
 	}
 }
 
+/// # Note
+///
+/// width, height and stride are encoded as the real value **minus** one.
 #[target_feature(enable = "ssse3")]
 unsafe fn copy_from_raw_untrusted_rgb24_to_any32(
 	slf: &mut FrameBuffer<impl PixelFormat>,
-	mut src: *const [u8; 3],
+	src: *const [u8; 3],
 	stride: u16,
 	x: u16,
 	y: u16,
@@ -49,21 +58,19 @@ unsafe fn copy_from_raw_untrusted_rgb24_to_any32(
 	shuf: x86_64::__m128i,
 	shuf_32: impl Fn(u8, u8, u8) -> [u8; 4] + Copy,
 ) {
-	if w == 0 || h == 0 {
-		return;
-	}
-	let f = usize::from;
-	let (stride, x, y, w, h) = (f(stride), f(x), f(y), f(w), f(h));
+	let f = |n| usize::from(n) + 1;
+	let (stride, x, y, w, h) = (f(stride), usize::from(x), usize::from(y), f(w), f(h));
 	assert!(x < f(slf.width) && x + w <= f(slf.width));
 	assert!(y < f(slf.height) && y + h <= f(slf.height));
+	let mut src = src.cast::<u8>();
 	let mut dst = slf.base.as_ptr().add(x).cast::<u8>().add(y * f(slf.stride));
 	let pre_end = dst.add((h - 1) * f(slf.stride));
 	while dst != pre_end {
-		copy_untrusted_row_rgb24_to_any32(dst.cast(), src, w, false, shuf, shuf_32);
+		copy_untrusted_row_rgb24_to_any32(dst.cast(), src.cast(), w, false, shuf, shuf_32);
 		src = src.add(stride);
 		dst = dst.add(f(slf.stride));
 	}
-	copy_untrusted_row_rgb24_to_any32(dst.cast(), src, w, true, shuf, shuf_32);
+	copy_untrusted_row_rgb24_to_any32(dst.cast(), src.cast(), w, true, shuf, shuf_32);
 }
 
 #[target_feature(enable = "ssse3")]
@@ -83,15 +90,15 @@ unsafe fn copy_untrusted_row_rgb24_to_any32(
 		while dst != end {
 			let E(a, c) = read_unaligned_untrusted(src.cast::<E>());
 			let [a, b] = a.to_le_bytes();
-			x86_64::_mm_stream_si32(dst, i32::from_le_bytes(shuf_32(a, b, c)));
+			*dst = i32::from_le_bytes(shuf_32(a, b, c));
 			src = src.add(1);
 			dst = dst.add(1);
 		}
 	} else {
 		// Align 16
 		while dst as usize & 0b1111 != 0 {
-			let v = read_unaligned_untrusted(src.cast::<i32>());
-			x86_64::_mm_stream_si32(dst, v.to_be() >> 8);
+			let [a, b, c, _] = read_unaligned_untrusted(src.cast::<i32>()).to_le_bytes();
+			*dst = i32::from_le_bytes(shuf_32(a, b, c));
 			src = src.add(1);
 			dst = dst.add(1);
 		}
@@ -104,7 +111,7 @@ unsafe fn copy_untrusted_row_rgb24_to_any32(
 		while dst != end_16 {
 			let v = read_unaligned_untrusted(src.cast::<x86_64::__m128i>());
 			let v = x86_64::_mm_shuffle_epi8(v, shuf);
-			x86_64::_mm_stream_si128(dst.cast(), v);
+			dst.cast::<x86_64::__m128i>().write(v);
 			src = src.add(4);
 			dst = dst.add(4);
 		}
@@ -113,7 +120,7 @@ unsafe fn copy_untrusted_row_rgb24_to_any32(
 		while dst != end {
 			let E(a, c) = read_unaligned_untrusted(src.cast::<E>());
 			let [a, b] = a.to_le_bytes();
-			x86_64::_mm_stream_si32(dst, i32::from_le_bytes(shuf_32(a, b, c)));
+			dst.write(i32::from_le_bytes(shuf_32(a, b, c)));
 			src = src.add(1);
 			dst = dst.add(1);
 		}
