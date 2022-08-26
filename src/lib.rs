@@ -1,6 +1,11 @@
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 #![feature(core_intrinsics)]
+#![feature(bench_black_box)]
+#![cfg_attr(test, feature(new_uninit))]
+#![feature(test)]
 
+#[cfg(test)]
+mod bench;
 #[cfg_attr(target_arch = "x86_64", path = "x86_64.rs")]
 mod imp;
 
@@ -17,7 +22,7 @@ macro_rules! pixfmt {
 		impl PixelFormat for $name {
 			type E = $ty;
 		}
-	}
+	};
 }
 
 use core::ptr::NonNull;
@@ -35,7 +40,12 @@ pub struct FrameBuffer<T: PixelFormat> {
 
 impl<T: PixelFormat> FrameBuffer<T> {
 	pub unsafe fn new(base: NonNull<T::E>, width: u16, height: u16, stride: u16) -> Self {
-		Self { base, width, height, stride }
+		Self {
+			base,
+			width,
+			height,
+			stride,
+		}
 	}
 }
 

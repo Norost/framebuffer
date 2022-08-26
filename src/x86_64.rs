@@ -13,7 +13,9 @@ impl FrameBuffer<Rgbx8888> {
 		h: u16,
 	) {
 		let shuf = x86_64::_mm_set_epi8(-1, 11, 10, 9, -1, 8, 7, 6, -1, 5, 4, 3, -1, 2, 1, 0);
-		copy_from_raw_untrusted_rgb24_to_any32(self, src, stride, x, y, w, h, shuf, |a, b, c| [a, b, c, 0])
+		copy_from_raw_untrusted_rgb24_to_any32(self, src, stride, x, y, w, h, shuf, |a, b, c| {
+			[a, b, c, 0]
+		})
 	}
 }
 
@@ -29,7 +31,9 @@ impl FrameBuffer<Bgrx8888> {
 		h: u16,
 	) {
 		let shuf = x86_64::_mm_set_epi8(-1, 9, 10, 11, -1, 6, 7, 8, -1, 3, 4, 5, -1, 0, 1, 2);
-		copy_from_raw_untrusted_rgb24_to_any32(self, src, stride, x, y, w, h, shuf, |a, b, c| [c, b, a, 0])
+		copy_from_raw_untrusted_rgb24_to_any32(self, src, stride, x, y, w, h, shuf, |a, b, c| {
+			[c, b, a, 0]
+		})
 	}
 }
 
